@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant User
+    participant Backend
+    participant ServiceCatalog as Service Catalog
+    participant OPA as OPA Server
+    participant Deployment as Deployment Service
+
+    User->>Backend: Request webserver
+    Backend->>ServiceCatalog: Fetch webserver specification
+    ServiceCatalog-->>Backend: Return specification
+    Backend->>OPA: Validate user request & decide zones
+    OPA-->>Backend: Validation result / deployment zones - us-east-1, us-east-2
+    Backend->>Deployment: Deploy app based on validation and spec on zone us-east-1, us-east-2
+    Deployment-->>Backend: Deployment result
+    Backend-->>User: Response (app deployed)
