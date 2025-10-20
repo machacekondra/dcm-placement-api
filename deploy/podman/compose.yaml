@@ -1,18 +1,63 @@
 services:
   placement-db:
     container_name: placement-db
-    image: ${PGSQL_IMAGE:-quay.io/sclorg/postgresql-15-c9s:latest}
+    image: quay.io/sclorg/postgresql-15-c9s:latest
     environment:
-      - POSTGRESQL_DATABASE=placement
-      - POSTGRESQL_USER=admin
-      - POSTGRESQL_PASSWORD=adminpass
-      - POSTGRESQL_MASTER_USER=admin
-      - POSTGRESQL_MASTER_PASSWORD=adminpass
-      - PGPASSWORD=adminpass
+      - POSTGRESQL_DATABASE=${DATABASE_NAME}
+      - POSTGRESQL_USER=${DATABASE_USER}
+      - POSTGRESQL_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRESQL_MASTER_USER=${DATABASE_MASTER_USER}
+      - POSTGRESQL_MASTER_PASSWORD=${DATABASE_MASTER_PASSWORD}
+      - PGPASSWORD=${DATABASE_MASTER_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${DATABASE_PORT}:5432"
     volumes:
       - placement-db:/var/lib/pgsql/data
+    networks:
+      - placement-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  placement-api:
+    container_name: placement-api
+    build:
+      context: ../..
+      dockerfile: Containerfile
+    image: quay.io/dcm-project/dcm-placement-api:latest
+    pull_policy: build
+    environment:
+      - DB_HOST=${DATABASE_HOST}
+      - DB_PORT=${DATABASE_PORT}
+      - DB_NAME=${DATABASE_NAME}
+      - DB_USER=${DATABASE_USER}
+      - DB_PASS=${DATABASE_PASSWORD}
+      - DCM_OPA_SERVER=http://policy-engine:8181
+    volumes:
+      - ${HOME}/.kube/config:/home/appuser/.kube/config:ro
+    ports:
+      - "8080:8080"
+    networks:
+      - placement-network
+    depends_on:
+      placement-db:
+        condition: service_healthy
+      policy-engine:
+        condition: service_started
+    restart: unless-stopped
+
+  policy-engine:
+    container_name: placement-policy-engine
+    image: docker.io/openpolicyagent/opa:latest
+    command: ["run", "--server", "--addr=0.0.0.0:8181", "--bundle", "/policies"]
+    volumes:
+      - ../../policies:/policies:Z
+    ports:
+      - "8181:8181"
     networks:
       - placement-network
     restart: unless-stopped

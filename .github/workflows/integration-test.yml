@@ -1,0 +1,70 @@
+name: Integration Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  GO_VERSION: '1.24'
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Install Podman and Podman Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y podman
+        pip3 install podman-compose
+        
+    - name: Create .env file for compose
+      run: |
+        cat > deploy/podman/.env << 'EOF'
+        # Database Configuration
+        DATABASE_NAME=placement
+        DATABASE_USER=admin
+        DATABASE_PASSWORD=adminpass
+        DATABASE_PORT=5432
+        DATABASE_HOST=placement-db
+        DATABASE_MASTER_USER=admin
+        DATABASE_MASTER_PASSWORD=adminpass
+        EOF
+        
+    - name: Start services with Podman Compose
+      working-directory: deploy/podman
+      run: |
+        podman-compose up -d
+        podman ps -a
+
+    - name: Test API endpoints
+      run: |
+        SWAGGER_RESPONSE=$(curl -s http://localhost:8080/swagger.json)
+        echo "Swagger response: $SWAGGER_RESPONSE"
+
+    - name: Show service logs on failure
+      if: failure()
+      run: |
+        podman logs placement-db || true
+        podman logs placement-policy-engine || true
+        podman logs placement-api || true
+        podman ps -a
+
+    - name: Cleanup
+      if: always()
+      working-directory: deploy/podman
+      run: |
+        podman-compose down -v || true
+        podman system prune -af || true

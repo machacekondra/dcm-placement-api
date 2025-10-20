@@ -1,15 +1,13 @@
-.PHONY: build run test clean fmt vet generate check-generate help 
+.PHONY: build run test clean fmt vet generate check-generate help container-build compose-up compose-down
 
-# Go binary path
 GOBIN := $(shell go env GOPATH)/bin
+CONTAINER_IMAGE := dcm-placement-api
+CONTAINER_TAG := latest
+COMPOSE_FILE := deploy/podman/compose.yaml
 
 # Build the application
 build:
 	go build -o bin/dcm-placement-api ./cmd/dcm-placement-api
-
-# Run the OPA server
-opa:
-	podman run -v ${PWD}/policies:/policies:Z -p 8181:8181 docker.io/openpolicyagent/opa:latest run --server --addr=0.0.0.0:8181 --bundle /policies
 
 # Check AEP compliance
 aep:
@@ -26,6 +24,18 @@ test:
 # Clean build artifacts
 clean:
 	rm -rf bin/
+
+# Build container image
+container-build:
+	podman build -t $(CONTAINER_IMAGE):$(CONTAINER_TAG) .
+
+# Run compose up
+compose-up:
+	podman-compose -f $(COMPOSE_FILE) up -d
+
+# Run compose down
+compose-down:
+	podman-compose -f $(COMPOSE_FILE) down
 
 # Format code
 fmt:
@@ -107,6 +117,9 @@ help:
 	@echo "  check           - Run all checks (fmt, vet, test)"
 	@echo "  dev             - Build and run"
 	@echo "  generate        - Generate code from OpenAPI specification"
+	@echo "  container-build - Build container image"
+	@echo "  compose-up      - Run compose up"
+	@echo "  compose-down    - Run compose down"
 	@echo "  help            - Show this help"
 
 include deploy/deploy.mk
