@@ -1,0 +1,14 @@
+{
+    "t1": {
+        "zones": [
+            "us-east-1",
+            "us-east-2"
+        ]
+    },
+    "t2": {
+        "zones": [
+            "us-west-1",
+            "us-west-2"
+        ]
+    }
+}

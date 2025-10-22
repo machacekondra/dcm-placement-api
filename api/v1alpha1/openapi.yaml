@@ -1,0 +1,200 @@
+openapi: 3.0.0
+info:
+  contact: {}
+  description: DCM Placement API
+  title: Placement API
+  version: v1alpha1
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: /
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: ListHealth
+      description: Health check for DCM Placement API
+      responses:
+        '200':
+          description: OK
+  /applications:
+    post:
+      summary: Create an application
+      operationId: createApplication
+      description: Create a DCM application
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional ID for the application
+          example: "123e4567-e89b-12d3-a456-426614174000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Get all applications
+      operationId: ListApplications
+      description: List all DCM Applications
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationList'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /applications/{id}:
+    delete:
+      summary: Delete an application
+      operationId: deleteApplication
+      description: Delete a DCM application based on unique ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+components:
+  schemas:
+    Application:
+      type: object
+      x-aep-resource: true
+      required:
+        - name
+        - service
+      properties:
+        name:
+          type: string
+          description: Name of the application
+          example: "app-server-01"
+        service:
+          type: string
+          description: Service of the application
+          enum:
+            - "webserver"
+            - "container"
+        zones:
+          type: array
+          items:
+            type: string
+          description: Zones of the application
+          example: ["us-west-1", "us-west-2"]
+        tier:
+          type: integer
+          description: Policy Tier of the application
+          default: 2
+
+    ApplicationResponse:
+      type: object
+      x-aep-resource: true
+      properties:
+        id:
+          type: string
+          description: ID of the application
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          format: uuid
+        name:
+          type: string
+          description: Name of the application
+          example: "app-server-01"
+        service:
+          type: string
+          description: Service of the application
+        zones:
+          type: array
+          items:
+            type: string
+          description: Zones of the application
+          example: ["us-west-1", "us-west-2"]
+        tier:
+          type: integer
+          description: Policy Tier of the application
+
+    ApplicationList:
+      type: object
+      required:
+        - applications
+      properties:
+        applications:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationResponse'
+        next_page_token:
+          type: string
+          description: Token for retrieving the next page of results
+          example: "eyJpZCI6IjEyM2U0NTY3LWU4OWItMTJkMy1hNDU2LTQyNjYxNDE3NDAwMCJ9"
+
+    Error:
+      required:
+        - error
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Invalid request parameters - Validation Failed"
+        code:
+          type: integer
+          description: Error code
+          example: 400
