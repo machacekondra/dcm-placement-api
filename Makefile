@@ -3,7 +3,7 @@
 GOBIN := $(shell go env GOPATH)/bin
 CONTAINER_IMAGE := dcm-placement-api
 CONTAINER_TAG := latest
-COMPOSE_FILE := deploy/podman/compose.yaml
+COMPOSE_FILE := $(realpath deploy/podman/compose.yaml)
 
 # Build the application
 build:
@@ -121,5 +121,3 @@ help:
 	@echo "  compose-up      - Run compose up"
 	@echo "  compose-down    - Run compose down"
 	@echo "  help            - Show this help"
-
-include deploy/deploy.mk

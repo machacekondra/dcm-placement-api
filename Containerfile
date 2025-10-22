@@ -20,8 +20,8 @@ WORKDIR /app
 
 COPY --from=builder /app/bin/dcm-placement-api /app/
 
-# Use non-root user
-RUN chown -R 1001:0 /app
+# TODO: remove when using service providers 
+RUN mkdir -p /app/.kube && chown -R 1001:0 /app
 USER 1001
 
 # Run the server
