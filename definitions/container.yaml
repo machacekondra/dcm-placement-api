@@ -1,0 +1,20 @@
+ContainerCatalogType:
+  type: object
+  required:
+    - cpu
+    - memory
+    - image
+    - namespace
+  properties:
+    cpu:
+      type: int
+      description: CPU count
+    memory:
+      type: int
+      description: Mib of memory
+    image:
+      type: string
+      description: Image of container
+    namespace:
+      type: string
+      description: Namespace of container

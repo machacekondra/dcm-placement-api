@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   contact: {}
-  description: DCM Placement API
-  title: Placement API
+  description: DCM API
+  title: DCP API
   version: v1alpha1
   license:
     name: Apache 2.0
@@ -16,7 +16,7 @@ paths:
     get:
       summary: Health check
       operationId: GetHealth
-      description: Health check for DCM Placement API
+      description: Health check for DCM API
       responses:
         '200':
           description: OK
@@ -24,32 +24,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Health'
-  /applications:
+  /catalogitems:
+    options:
+      summary: Options for catalog items
+      operationId: optionsCatalogItems
+      description: Options for catalog items
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Options'
     post:
-      summary: Create an application
-      operationId: createApplication
-      description: Create a DCM application
-      parameters:
-        - name: id
-          in: query
-          required: false
-          schema:
-            type: string
-          description: Optional ID for the application
-          example: "123e4567-e89b-12d3-a456-426614174000"
+      summary: Create an catalog item
+      operationId: createCatalogItem
+      description: Create an catalog item
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Application'
+              $ref: '#/components/schemas/CatalogItem'
       responses:
         '201':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApplicationResponse'
+                $ref: '#/components/schemas/CatalogItemResponse'
         '400':
           description: Bad request
           content:
@@ -63,32 +66,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     get:
-      summary: Get all applications
-      operationId: ListApplications
-      description: List all DCM Applications
-      parameters:
-        - name: max_page_size
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 100
-          description: Maximum number of items to return
-        - name: page_token
-          in: query
-          required: false
-          schema:
-            type: string
-          description: Token for pagination
+      summary: Get all catalog items
+      operationId: listCatalogItems
+      description: List all catalog items
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApplicationList'
+                $ref: '#/components/schemas/CatalogItemList'
         '400':
           description: Bad request
           content:
@@ -101,12 +88,94 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
-  /applications/{id}:
+  /catalogitems/{id}:
     delete:
-      summary: Delete an application
-      operationId: deleteApplication
-      description: Delete a DCM application based on unique ID
+      summary: Delete an catalog item
+      operationId: deleteCatalogItem
+      description: Delete catalog item based on unique ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogItemResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /cataloginstances:
+    post:
+      summary: Create an catalog instance
+      operationId: createCatalogInstance
+      description: Create an catalog instance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CatalogInstance'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogInstanceResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Get all catalog instances
+      operationId: listCatalogInstances
+      description: List all catalog instances
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogInstanceResponseList'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /cataloginstances/{id}:
+    delete:
+      summary: Delete an catalog instance
+      operationId: deleteCatalogInstance
+      description: Delete catalog item based on unique ID
       parameters:
         - name: id
           in: path
@@ -120,7 +189,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApplicationResponse'
+                $ref: '#/components/schemas/CatalogInstanceResponse'
         '400':
           description: Bad request
           content:
@@ -133,88 +202,105 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
-
 components:
   schemas:
-    Application:
+    Options:
+      type: object
+      properties:
+        allowedMethods:
+          type: array
+          items:
+            type: string
+          description: Allowed methods
+          example: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    CatalogItem:
       type: object
       x-aep-resource: true
       required:
         - name
-        - service
+        - resourceType
+        - parameters
       properties:
-        path:
-          type: string
-          description: Canonical path of the resource
-          example: "applications/123e4567-e89b-12d3-a456-426614174000"
-          readOnly: true
         name:
           type: string
-          description: Name of the application
-          example: "app-server-01"
-        service:
+          description: Name of the instance
+        resourceType:
           type: string
-          description: Service of the application
+          description: Resource type of the catalog item
           enum:
-            - "webserver"
-            - "container"
-        zones:
-          type: array
-          items:
-            type: string
-          description: Zones of the application
-          example: ["us-west-1", "us-west-2"]
-        tier:
-          type: integer
-          description: Policy Tier of the application
-          default: 2
-
-    ApplicationResponse:
-      type: object
-      x-aep-resource: true
-      properties:
-        path:
-          type: string
-          description: Canonical path of the resource
-          example: "applications/123e4567-e89b-12d3-a456-426614174000"
-          readOnly: true
-        id:
-          type: string
-          description: ID of the application
-          example: "123e4567-e89b-12d3-a456-426614174000"
-          format: uuid
-        name:
-          type: string
-          description: Name of the application
-          example: "app-server-01"
-        service:
-          type: string
-          description: Service of the application
-        zones:
-          type: array
-          items:
-            type: string
-          description: Zones of the application
-          example: ["us-west-1", "us-west-2"]
-        tier:
-          type: integer
-          description: Policy Tier of the application
-
-    ApplicationList:
+            - vm
+            - container
+        parameters:
+          type: object
+          description: Content of the catalog item
+    CatalogItemResponse:
+       allOf:
+        - $ref: '#/components/schemas/CatalogItem'
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+              description: ID of the instance
+              example: "123e4567-e89b-12d3-a456-426614174000"
+              format: uuid
+    CatalogItemList:
       type: object
       required:
-        - applications
+        - catalogItems
       properties:
-        applications:
+        catalogItems:
           type: array
           items:
-            $ref: '#/components/schemas/ApplicationResponse'
-        next_page_token:
+            $ref: '#/components/schemas/CatalogItem'
+    CatalogInstance:
+      type: object
+      required:
+        - name
+        - catalogItem
+      properties:
+        name:
           type: string
-          description: Token for retrieving the next page of results
-          example: "eyJpZCI6IjEyM2U0NTY3LWU4OWItMTJkMy1hNDU2LTQyNjYxNDE3NDAwMCJ9"
-
+          description: Name of the instance
+          example: "app-server-01"
+        catalogItem:
+          $ref: '#/components/schemas/CatalogItem'
+    CatalogInstanceResponse:
+      allOf:
+        - $ref: '#/components/schemas/CatalogInstance'
+        - type: object
+          properties:
+            id:
+              type: string
+              description: ID of the instance
+              example: "123e4567-e89b-12d3-a456-426614174000"
+              format: uuid
+            status:
+              type: string
+              description: Status of the instance
+              example: "placed"
+            provider:
+              $ref: './provider/openapi.yaml#/components/schemas/ProviderServiceResponse'
+              description: Provider of the instance
+    CatalogInstanceList:
+      type: object
+      required:
+        - instances
+      properties:
+        instances:
+          type: array
+          items:
+            $ref: '#/components/schemas/CatalogInstance'
+    CatalogInstanceResponseList:
+      type: object
+      required:
+        - instances
+      properties:
+        instances:
+          type: array
+          items:
+            $ref: '#/components/schemas/CatalogInstanceResponse'
     Error:
       required:
         - error
@@ -230,11 +316,6 @@ components:
           type: string
           description: Error message
           example: "Invalid request parameters - Validation Failed"
-        code:
-          type: integer
-          description: Error code
-          example: 400
-
     Health:
       type: object
       x-aep-resource:

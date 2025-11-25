@@ -1,0 +1,44 @@
+flowchart TD
+    Start([User Starts]) --> Step1[Register Service Provider]
+    
+    Step1 --> Input1{Input Data}
+    Input1 --> |Name| SP1[Service Provider Name]
+    Input1 --> |Endpoint| SP2[Service Provider Endpoint]
+    Input1 --> |Resource Type| SP3[Select Resource]
+    
+    SP1 & SP2 & SP3 --> Create1[(Create ServiceProvider)]
+    Create1 --> |Links to| Res1[(Resource)]
+    
+    Create1 --> Step2[Create Catalog Item]
+    
+    Step2 --> Input2{Input Data}
+    Input2 --> |Name| CI1[Catalog Item Name]
+    Input2 --> |Parameters| CI2[Parameters JSON<br/>cpu, memory, image, etc.]
+    Input2 --> |Resource Type| CI3[Select Resource]
+    
+    CI1 & CI2 & CI3 --> Create2[(Create CatalogItem)]
+    Create2 --> |Links to| Res2[(Resource)]
+    
+    Create2 --> Step3[Create Catalog Instance]
+    
+    Step3 --> Input3{Input Data}
+    Input3 --> |Instance Name| Inst1[Instance Name<br/>e.g. prod-nginx-01]
+    Input3 --> |Catalog Item| Inst2[Select CatalogItem]
+    
+    Inst1 & Inst2 --> Create3[(Create CatalogInstance)]
+    Create3 --> |Links to| Cat1[(CatalogItem)]
+    
+    Create3 --> Deploy[Deploy Instance]
+    Deploy --> |Uses| SP4[(ServiceProvider)]
+    Deploy --> |With| Params[(Parameters from CatalogItem)]
+    
+    Deploy --> End([Instance Running])
+    
+    style Step1 fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+    style Step2 fill:#e8f5e9,stroke:#388e3c,stroke-width:3px
+    style Step3 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+    style Create1 fill:#f3e5f5,stroke:#7b1fa2
+    style Create2 fill:#e8f5e9,stroke:#388e3c
+    style Create3 fill:#fff3e0,stroke:#f57c00
+    style Deploy fill:#ffebee,stroke:#c62828
+    style End fill:#c8e6c9,stroke:#2e7d32,stroke-width:3px

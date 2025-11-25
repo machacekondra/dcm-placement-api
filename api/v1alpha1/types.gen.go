@@ -4,70 +4,95 @@
 package v1alpha1
 
 import (
+	externalRef0 "github.com/dcm-project/dcm-placement-api/api/v1alpha1/provider"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// Defines values for ApplicationService.
+// Defines values for CatalogItemResourceType.
 const (
-	Container ApplicationService = "container"
-	Webserver ApplicationService = "webserver"
+	CatalogItemResourceTypeContainer CatalogItemResourceType = "container"
+	CatalogItemResourceTypeVm        CatalogItemResourceType = "vm"
 )
 
-// Application defines model for Application.
-type Application struct {
-	// Name Name of the application
+// Defines values for CatalogItemResponseResourceType.
+const (
+	CatalogItemResponseResourceTypeContainer CatalogItemResponseResourceType = "container"
+	CatalogItemResponseResourceTypeVm        CatalogItemResponseResourceType = "vm"
+)
+
+// CatalogInstance defines model for CatalogInstance.
+type CatalogInstance struct {
+	CatalogItem CatalogItem `json:"catalogItem"`
+
+	// Name Name of the instance
 	Name string `json:"name"`
-
-	// Path Canonical path of the resource
-	Path *string `json:"path,omitempty"`
-
-	// Service Service of the application
-	Service ApplicationService `json:"service"`
-
-	// Tier Policy Tier of the application
-	Tier *int `json:"tier,omitempty"`
-
-	// Zones Zones of the application
-	Zones *[]string `json:"zones,omitempty"`
 }
 
-// ApplicationService Service of the application
-type ApplicationService string
-
-// ApplicationList defines model for ApplicationList.
-type ApplicationList struct {
-	Applications []ApplicationResponse `json:"applications"`
-
-	// NextPageToken Token for retrieving the next page of results
-	NextPageToken *string `json:"next_page_token,omitempty"`
+// CatalogInstanceList defines model for CatalogInstanceList.
+type CatalogInstanceList struct {
+	Instances []CatalogInstance `json:"instances"`
 }
 
-// ApplicationResponse defines model for ApplicationResponse.
-type ApplicationResponse struct {
-	// Id ID of the application
+// CatalogInstanceResponse defines model for CatalogInstanceResponse.
+type CatalogInstanceResponse struct {
+	CatalogItem CatalogItem `json:"catalogItem"`
+
+	// Id ID of the instance
 	Id *openapi_types.UUID `json:"id,omitempty"`
 
-	// Name Name of the application
-	Name *string `json:"name,omitempty"`
+	// Name Name of the instance
+	Name     string                                `json:"name"`
+	Provider *externalRef0.ProviderServiceResponse `json:"provider,omitempty"`
 
-	// Path Canonical path of the resource
-	Path *string `json:"path,omitempty"`
-
-	// Service Service of the application
-	Service *string `json:"service,omitempty"`
-
-	// Tier Policy Tier of the application
-	Tier *int `json:"tier,omitempty"`
-
-	// Zones Zones of the application
-	Zones *[]string `json:"zones,omitempty"`
+	// Status Status of the instance
+	Status *string `json:"status,omitempty"`
 }
+
+// CatalogInstanceResponseList defines model for CatalogInstanceResponseList.
+type CatalogInstanceResponseList struct {
+	Instances []CatalogInstanceResponse `json:"instances"`
+}
+
+// CatalogItem defines model for CatalogItem.
+type CatalogItem struct {
+	// Name Name of the instance
+	Name string `json:"name"`
+
+	// Parameters Content of the catalog item
+	Parameters map[string]interface{} `json:"parameters"`
+
+	// ResourceType Resource type of the catalog item
+	ResourceType CatalogItemResourceType `json:"resourceType"`
+}
+
+// CatalogItemResourceType Resource type of the catalog item
+type CatalogItemResourceType string
+
+// CatalogItemList defines model for CatalogItemList.
+type CatalogItemList struct {
+	CatalogItems []CatalogItem `json:"catalogItems"`
+}
+
+// CatalogItemResponse defines model for CatalogItemResponse.
+type CatalogItemResponse struct {
+	// Id ID of the instance
+	Id openapi_types.UUID `json:"id"`
+
+	// Name Name of the instance
+	Name string `json:"name"`
+
+	// Parameters Content of the catalog item
+	Parameters map[string]interface{} `json:"parameters"`
+
+	// ResourceType Resource type of the catalog item
+	ResourceType CatalogItemResponseResourceType `json:"resourceType"`
+}
+
+// CatalogItemResponseResourceType Resource type of the catalog item
+type CatalogItemResponseResourceType string
 
 // Error defines model for Error.
 type Error struct {
-	// Code Error code
-	Code *int `json:"code,omitempty"`
-
 	// Error Error message
 	Error string `json:"error"`
 
@@ -84,20 +109,14 @@ type Health struct {
 	Status *string `json:"status,omitempty"`
 }
 
-// ListApplicationsParams defines parameters for ListApplications.
-type ListApplicationsParams struct {
-	// MaxPageSize Maximum number of items to return
-	MaxPageSize *int `form:"max_page_size,omitempty" json:"max_page_size,omitempty"`
-
-	// PageToken Token for pagination
-	PageToken *string `form:"page_token,omitempty" json:"page_token,omitempty"`
+// Options defines model for Options.
+type Options struct {
+	// AllowedMethods Allowed methods
+	AllowedMethods *[]string `json:"allowedMethods,omitempty"`
 }
 
-// CreateApplicationParams defines parameters for CreateApplication.
-type CreateApplicationParams struct {
-	// Id Optional ID for the application
-	Id *string `form:"id,omitempty" json:"id,omitempty"`
-}
+// CreateCatalogInstanceJSONRequestBody defines body for CreateCatalogInstance for application/json ContentType.
+type CreateCatalogInstanceJSONRequestBody = CatalogInstance
 
-// CreateApplicationJSONRequestBody defines body for CreateApplication for application/json ContentType.
-type CreateApplicationJSONRequestBody = Application
+// CreateCatalogItemJSONRequestBody defines body for CreateCatalogItem for application/json ContentType.
+type CreateCatalogItemJSONRequestBody = CatalogItem

@@ -1,0 +1,30 @@
+erDiagram
+    Resource ||--o{ ServiceProvider : ""
+    Resource ||--o{ CatalogItem : ""
+    CatalogItem ||--o{ CatalogInstance : ""
+
+    Resource {
+        uuid ID
+        string ResourceType
+        jsonb Content
+    }
+
+    ServiceProvider {
+        uuid ID
+        uuid ResourceID
+        string Name
+        string Endpoint
+    }
+
+    CatalogItem {
+        uuid ID
+        string Name
+        jsonb Parameters
+        uuid ResourceID
+    }
+
+    CatalogInstance {
+        uuid ID
+        string Name
+        uuid CatalogItemID
+    }

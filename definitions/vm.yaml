@@ -1,0 +1,16 @@
+VMCatalogType:
+  type: object
+  required:
+    - cpu
+    - ram
+    - os
+  properties:
+    cpu:
+      type: int
+      description: CPU count
+    ram:
+      type: int
+      description: Mib of memory
+    os:
+      type: string
+      description: Operating system

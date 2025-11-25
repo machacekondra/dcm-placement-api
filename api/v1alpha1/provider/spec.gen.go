@@ -12,35 +12,31 @@ import (
 	"path"
 	"strings"
 
-	externalRef0 "github.com/dcm-project/dcm-placement-api/api/v1alpha1/provider"
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"//7KWJuyEgAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
@@ -80,14 +76,6 @@ func PathToRawSpec(pathToFile string) map[string]func() ([]byte, error) {
 		res[pathToFile] = rawSpec
 	}
 
-	pathPrefix := path.Dir(pathToFile)
-
-	for rawPath, rawFunc := range externalRef0.PathToRawSpec(path.Join(pathPrefix, "./provider/openapi.yaml")) {
-		if _, ok := res[rawPath]; ok {
-			// it is not possible to compare functions in golang, so always overwrite the old value
-		}
-		res[rawPath] = rawFunc
-	}
 	return res
 }
 

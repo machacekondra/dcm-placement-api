@@ -91,23 +91,37 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// ListApplications request
-	ListApplications(ctx context.Context, params *ListApplicationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListCatalogInstances request
+	ListCatalogInstances(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateApplicationWithBody request with any body
-	CreateApplicationWithBody(ctx context.Context, params *CreateApplicationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateCatalogInstanceWithBody request with any body
+	CreateCatalogInstanceWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	CreateApplication(ctx context.Context, params *CreateApplicationParams, body CreateApplicationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateCatalogInstance(ctx context.Context, body CreateCatalogInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeleteApplication request
-	DeleteApplication(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeleteCatalogInstance request
+	DeleteCatalogInstance(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListCatalogItems request
+	ListCatalogItems(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// OptionsCatalogItems request
+	OptionsCatalogItems(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateCatalogItemWithBody request with any body
+	CreateCatalogItemWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateCatalogItem(ctx context.Context, body CreateCatalogItemJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteCatalogItem request
+	DeleteCatalogItem(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetHealth request
 	GetHealth(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *Client) ListApplications(ctx context.Context, params *ListApplicationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListApplicationsRequest(c.Server, params)
+func (c *Client) ListCatalogInstances(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListCatalogInstancesRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -118,8 +132,8 @@ func (c *Client) ListApplications(ctx context.Context, params *ListApplicationsP
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateApplicationWithBody(ctx context.Context, params *CreateApplicationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateApplicationRequestWithBody(c.Server, params, contentType, body)
+func (c *Client) CreateCatalogInstanceWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCatalogInstanceRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -130,8 +144,8 @@ func (c *Client) CreateApplicationWithBody(ctx context.Context, params *CreateAp
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateApplication(ctx context.Context, params *CreateApplicationParams, body CreateApplicationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateApplicationRequest(c.Server, params, body)
+func (c *Client) CreateCatalogInstance(ctx context.Context, body CreateCatalogInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCatalogInstanceRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -142,8 +156,68 @@ func (c *Client) CreateApplication(ctx context.Context, params *CreateApplicatio
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteApplication(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteApplicationRequest(c.Server, id)
+func (c *Client) DeleteCatalogInstance(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCatalogInstanceRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListCatalogItems(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListCatalogItemsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) OptionsCatalogItems(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewOptionsCatalogItemsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateCatalogItemWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCatalogItemRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateCatalogItem(ctx context.Context, body CreateCatalogItemJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCatalogItemRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCatalogItem(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCatalogItemRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -166,8 +240,8 @@ func (c *Client) GetHealth(ctx context.Context, reqEditors ...RequestEditorFn) (
 	return c.Client.Do(req)
 }
 
-// NewListApplicationsRequest generates requests for ListApplications
-func NewListApplicationsRequest(server string, params *ListApplicationsParams) (*http.Request, error) {
+// NewListCatalogInstancesRequest generates requests for ListCatalogInstances
+func NewListCatalogInstancesRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -175,7 +249,7 @@ func NewListApplicationsRequest(server string, params *ListApplicationsParams) (
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/applications")
+	operationPath := fmt.Sprintf("/cataloginstances")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -183,44 +257,6 @@ func NewListApplicationsRequest(server string, params *ListApplicationsParams) (
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
-	}
-
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if params.MaxPageSize != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "max_page_size", runtime.ParamLocationQuery, *params.MaxPageSize); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.PageToken != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -231,19 +267,19 @@ func NewListApplicationsRequest(server string, params *ListApplicationsParams) (
 	return req, nil
 }
 
-// NewCreateApplicationRequest calls the generic CreateApplication builder with application/json body
-func NewCreateApplicationRequest(server string, params *CreateApplicationParams, body CreateApplicationJSONRequestBody) (*http.Request, error) {
+// NewCreateCatalogInstanceRequest calls the generic CreateCatalogInstance builder with application/json body
+func NewCreateCatalogInstanceRequest(server string, body CreateCatalogInstanceJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewCreateApplicationRequestWithBody(server, params, "application/json", bodyReader)
+	return NewCreateCatalogInstanceRequestWithBody(server, "application/json", bodyReader)
 }
 
-// NewCreateApplicationRequestWithBody generates requests for CreateApplication with any type of body
-func NewCreateApplicationRequestWithBody(server string, params *CreateApplicationParams, contentType string, body io.Reader) (*http.Request, error) {
+// NewCreateCatalogInstanceRequestWithBody generates requests for CreateCatalogInstance with any type of body
+func NewCreateCatalogInstanceRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -251,7 +287,7 @@ func NewCreateApplicationRequestWithBody(server string, params *CreateApplicatio
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/applications")
+	operationPath := fmt.Sprintf("/cataloginstances")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -259,28 +295,6 @@ func NewCreateApplicationRequestWithBody(server string, params *CreateApplicatio
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
-	}
-
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if params.Id != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "id", runtime.ParamLocationQuery, *params.Id); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), body)
@@ -293,8 +307,8 @@ func NewCreateApplicationRequestWithBody(server string, params *CreateApplicatio
 	return req, nil
 }
 
-// NewDeleteApplicationRequest generates requests for DeleteApplication
-func NewDeleteApplicationRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+// NewDeleteCatalogInstanceRequest generates requests for DeleteCatalogInstance
+func NewDeleteCatalogInstanceRequest(server string, id openapi_types.UUID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -309,7 +323,135 @@ func NewDeleteApplicationRequest(server string, id openapi_types.UUID) (*http.Re
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/applications/%s", pathParam0)
+	operationPath := fmt.Sprintf("/cataloginstances/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListCatalogItemsRequest generates requests for ListCatalogItems
+func NewListCatalogItemsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/catalogitems")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewOptionsCatalogItemsRequest generates requests for OptionsCatalogItems
+func NewOptionsCatalogItemsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/catalogitems")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("OPTIONS", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateCatalogItemRequest calls the generic CreateCatalogItem builder with application/json body
+func NewCreateCatalogItemRequest(server string, body CreateCatalogItemJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateCatalogItemRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateCatalogItemRequestWithBody generates requests for CreateCatalogItem with any type of body
+func NewCreateCatalogItemRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/catalogitems")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteCatalogItemRequest generates requests for DeleteCatalogItem
+func NewDeleteCatalogItemRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/catalogitems/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -397,31 +539,45 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// ListApplicationsWithResponse request
-	ListApplicationsWithResponse(ctx context.Context, params *ListApplicationsParams, reqEditors ...RequestEditorFn) (*ListApplicationsResponse, error)
+	// ListCatalogInstancesWithResponse request
+	ListCatalogInstancesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListCatalogInstancesResponse, error)
 
-	// CreateApplicationWithBodyWithResponse request with any body
-	CreateApplicationWithBodyWithResponse(ctx context.Context, params *CreateApplicationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateApplicationResponse, error)
+	// CreateCatalogInstanceWithBodyWithResponse request with any body
+	CreateCatalogInstanceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCatalogInstanceResponse, error)
 
-	CreateApplicationWithResponse(ctx context.Context, params *CreateApplicationParams, body CreateApplicationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateApplicationResponse, error)
+	CreateCatalogInstanceWithResponse(ctx context.Context, body CreateCatalogInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCatalogInstanceResponse, error)
 
-	// DeleteApplicationWithResponse request
-	DeleteApplicationWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteApplicationResponse, error)
+	// DeleteCatalogInstanceWithResponse request
+	DeleteCatalogInstanceWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteCatalogInstanceResponse, error)
+
+	// ListCatalogItemsWithResponse request
+	ListCatalogItemsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListCatalogItemsResponse, error)
+
+	// OptionsCatalogItemsWithResponse request
+	OptionsCatalogItemsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*OptionsCatalogItemsResponse, error)
+
+	// CreateCatalogItemWithBodyWithResponse request with any body
+	CreateCatalogItemWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCatalogItemResponse, error)
+
+	CreateCatalogItemWithResponse(ctx context.Context, body CreateCatalogItemJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCatalogItemResponse, error)
+
+	// DeleteCatalogItemWithResponse request
+	DeleteCatalogItemWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCatalogItemResponse, error)
 
 	// GetHealthWithResponse request
 	GetHealthWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthResponse, error)
 }
 
-type ListApplicationsResponse struct {
+type ListCatalogInstancesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ApplicationList
+	JSON200      *CatalogInstanceResponseList
 	JSON400      *Error
 	JSON500      *Error
 }
 
 // Status returns HTTPResponse.Status
-func (r ListApplicationsResponse) Status() string {
+func (r ListCatalogInstancesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -429,23 +585,23 @@ func (r ListApplicationsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r ListApplicationsResponse) StatusCode() int {
+func (r ListCatalogInstancesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type CreateApplicationResponse struct {
+type CreateCatalogInstanceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *ApplicationResponse
+	JSON201      *CatalogInstanceResponse
 	JSON400      *Error
 	JSON500      *Error
 }
 
 // Status returns HTTPResponse.Status
-func (r CreateApplicationResponse) Status() string {
+func (r CreateCatalogInstanceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -453,23 +609,23 @@ func (r CreateApplicationResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r CreateApplicationResponse) StatusCode() int {
+func (r CreateCatalogInstanceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DeleteApplicationResponse struct {
+type DeleteCatalogInstanceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON204      *ApplicationResponse
+	JSON204      *CatalogInstanceResponse
 	JSON400      *Error
 	JSON500      *Error
 }
 
 // Status returns HTTPResponse.Status
-func (r DeleteApplicationResponse) Status() string {
+func (r DeleteCatalogInstanceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -477,7 +633,101 @@ func (r DeleteApplicationResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeleteApplicationResponse) StatusCode() int {
+func (r DeleteCatalogInstanceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListCatalogItemsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CatalogItemList
+	JSON400      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListCatalogItemsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListCatalogItemsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type OptionsCatalogItemsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Options
+}
+
+// Status returns HTTPResponse.Status
+func (r OptionsCatalogItemsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r OptionsCatalogItemsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateCatalogItemResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *CatalogItemResponse
+	JSON400      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateCatalogItemResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateCatalogItemResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteCatalogItemResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON204      *CatalogItemResponse
+	JSON400      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteCatalogItemResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteCatalogItemResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -506,39 +756,83 @@ func (r GetHealthResponse) StatusCode() int {
 	return 0
 }
 
-// ListApplicationsWithResponse request returning *ListApplicationsResponse
-func (c *ClientWithResponses) ListApplicationsWithResponse(ctx context.Context, params *ListApplicationsParams, reqEditors ...RequestEditorFn) (*ListApplicationsResponse, error) {
-	rsp, err := c.ListApplications(ctx, params, reqEditors...)
+// ListCatalogInstancesWithResponse request returning *ListCatalogInstancesResponse
+func (c *ClientWithResponses) ListCatalogInstancesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListCatalogInstancesResponse, error) {
+	rsp, err := c.ListCatalogInstances(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseListApplicationsResponse(rsp)
+	return ParseListCatalogInstancesResponse(rsp)
 }
 
-// CreateApplicationWithBodyWithResponse request with arbitrary body returning *CreateApplicationResponse
-func (c *ClientWithResponses) CreateApplicationWithBodyWithResponse(ctx context.Context, params *CreateApplicationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateApplicationResponse, error) {
-	rsp, err := c.CreateApplicationWithBody(ctx, params, contentType, body, reqEditors...)
+// CreateCatalogInstanceWithBodyWithResponse request with arbitrary body returning *CreateCatalogInstanceResponse
+func (c *ClientWithResponses) CreateCatalogInstanceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCatalogInstanceResponse, error) {
+	rsp, err := c.CreateCatalogInstanceWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseCreateApplicationResponse(rsp)
+	return ParseCreateCatalogInstanceResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateApplicationWithResponse(ctx context.Context, params *CreateApplicationParams, body CreateApplicationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateApplicationResponse, error) {
-	rsp, err := c.CreateApplication(ctx, params, body, reqEditors...)
+func (c *ClientWithResponses) CreateCatalogInstanceWithResponse(ctx context.Context, body CreateCatalogInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCatalogInstanceResponse, error) {
+	rsp, err := c.CreateCatalogInstance(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseCreateApplicationResponse(rsp)
+	return ParseCreateCatalogInstanceResponse(rsp)
 }
 
-// DeleteApplicationWithResponse request returning *DeleteApplicationResponse
-func (c *ClientWithResponses) DeleteApplicationWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteApplicationResponse, error) {
-	rsp, err := c.DeleteApplication(ctx, id, reqEditors...)
+// DeleteCatalogInstanceWithResponse request returning *DeleteCatalogInstanceResponse
+func (c *ClientWithResponses) DeleteCatalogInstanceWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteCatalogInstanceResponse, error) {
+	rsp, err := c.DeleteCatalogInstance(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeleteApplicationResponse(rsp)
+	return ParseDeleteCatalogInstanceResponse(rsp)
+}
+
+// ListCatalogItemsWithResponse request returning *ListCatalogItemsResponse
+func (c *ClientWithResponses) ListCatalogItemsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListCatalogItemsResponse, error) {
+	rsp, err := c.ListCatalogItems(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListCatalogItemsResponse(rsp)
+}
+
+// OptionsCatalogItemsWithResponse request returning *OptionsCatalogItemsResponse
+func (c *ClientWithResponses) OptionsCatalogItemsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*OptionsCatalogItemsResponse, error) {
+	rsp, err := c.OptionsCatalogItems(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseOptionsCatalogItemsResponse(rsp)
+}
+
+// CreateCatalogItemWithBodyWithResponse request with arbitrary body returning *CreateCatalogItemResponse
+func (c *ClientWithResponses) CreateCatalogItemWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCatalogItemResponse, error) {
+	rsp, err := c.CreateCatalogItemWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCatalogItemResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateCatalogItemWithResponse(ctx context.Context, body CreateCatalogItemJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCatalogItemResponse, error) {
+	rsp, err := c.CreateCatalogItem(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCatalogItemResponse(rsp)
+}
+
+// DeleteCatalogItemWithResponse request returning *DeleteCatalogItemResponse
+func (c *ClientWithResponses) DeleteCatalogItemWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCatalogItemResponse, error) {
+	rsp, err := c.DeleteCatalogItem(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCatalogItemResponse(rsp)
 }
 
 // GetHealthWithResponse request returning *GetHealthResponse
@@ -550,22 +844,22 @@ func (c *ClientWithResponses) GetHealthWithResponse(ctx context.Context, reqEdit
 	return ParseGetHealthResponse(rsp)
 }
 
-// ParseListApplicationsResponse parses an HTTP response from a ListApplicationsWithResponse call
-func ParseListApplicationsResponse(rsp *http.Response) (*ListApplicationsResponse, error) {
+// ParseListCatalogInstancesResponse parses an HTTP response from a ListCatalogInstancesWithResponse call
+func ParseListCatalogInstancesResponse(rsp *http.Response) (*ListCatalogInstancesResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &ListApplicationsResponse{
+	response := &ListCatalogInstancesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ApplicationList
+		var dest CatalogInstanceResponseList
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -590,22 +884,22 @@ func ParseListApplicationsResponse(rsp *http.Response) (*ListApplicationsRespons
 	return response, nil
 }
 
-// ParseCreateApplicationResponse parses an HTTP response from a CreateApplicationWithResponse call
-func ParseCreateApplicationResponse(rsp *http.Response) (*CreateApplicationResponse, error) {
+// ParseCreateCatalogInstanceResponse parses an HTTP response from a CreateCatalogInstanceWithResponse call
+func ParseCreateCatalogInstanceResponse(rsp *http.Response) (*CreateCatalogInstanceResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &CreateApplicationResponse{
+	response := &CreateCatalogInstanceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest ApplicationResponse
+		var dest CatalogInstanceResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -630,22 +924,168 @@ func ParseCreateApplicationResponse(rsp *http.Response) (*CreateApplicationRespo
 	return response, nil
 }
 
-// ParseDeleteApplicationResponse parses an HTTP response from a DeleteApplicationWithResponse call
-func ParseDeleteApplicationResponse(rsp *http.Response) (*DeleteApplicationResponse, error) {
+// ParseDeleteCatalogInstanceResponse parses an HTTP response from a DeleteCatalogInstanceWithResponse call
+func ParseDeleteCatalogInstanceResponse(rsp *http.Response) (*DeleteCatalogInstanceResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeleteApplicationResponse{
+	response := &DeleteCatalogInstanceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 204:
-		var dest ApplicationResponse
+		var dest CatalogInstanceResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON204 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListCatalogItemsResponse parses an HTTP response from a ListCatalogItemsWithResponse call
+func ParseListCatalogItemsResponse(rsp *http.Response) (*ListCatalogItemsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListCatalogItemsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CatalogItemList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseOptionsCatalogItemsResponse parses an HTTP response from a OptionsCatalogItemsWithResponse call
+func ParseOptionsCatalogItemsResponse(rsp *http.Response) (*OptionsCatalogItemsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &OptionsCatalogItemsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Options
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateCatalogItemResponse parses an HTTP response from a CreateCatalogItemWithResponse call
+func ParseCreateCatalogItemResponse(rsp *http.Response) (*CreateCatalogItemResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateCatalogItemResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest CatalogItemResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteCatalogItemResponse parses an HTTP response from a DeleteCatalogItemWithResponse call
+func ParseDeleteCatalogItemResponse(rsp *http.Response) (*DeleteCatalogItemResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteCatalogItemResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 204:
+		var dest CatalogItemResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

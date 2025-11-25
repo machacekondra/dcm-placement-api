@@ -1,0 +1,251 @@
+openapi: 3.0.0
+info:
+  contact: {}
+  description: Provider Service API
+  title: Provider service API
+  version: v1alpha1
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: /
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: GetHealth
+      description: Health check for DCM Provider service API
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+  /resources:
+    options:
+      summary: Options for resources
+      operationId: optionsResources
+      description: Options for resources
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Options'
+    get:
+      summary: Get all resources
+      operationId: listResources
+      description: List all resources
+      responses:
+        '200':
+          description: OK
+          content:
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/ResourceList'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceList'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /resources/{resourceType}:
+    get:
+      summary: Get a resource by type
+      operationId: getResource
+      description: Get a resource by type
+      parameters:
+        - name: resourceType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - vm
+              - container
+      responses:
+        '200':
+          description: OK
+          content:
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/Resource'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Register a new provider for resource type
+      operationId: registerServiceProvider
+      description: Register a new provider for resource type
+      parameters:
+        - name: resourceType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - vm
+              - container
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProviderService'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderServiceResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Options:
+      type: object
+      properties:
+        allowedMethods:
+          type: array
+          items:
+            type: string
+          description: Allowed methods
+          example: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+
+    Resource:
+      type: object
+      x-aep-resource: true
+      required:
+        - resourceType
+        - schema
+      properties:
+        resourceType:
+          type: string
+          description: Type of the resource
+          enum:
+            - vm
+            - container
+        schema:
+          type: object
+          description: Schema of the resource
+        providers:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderServiceResponse'
+
+    ResourceList:
+      type: object
+      required:
+        - resources
+      properties:
+        resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Resource'
+
+    ProviderService:
+      type: object
+      x-aep-resource: true
+      required:
+        - name
+        - endpoint
+      properties:
+        name:
+          type: string
+          description: Name of the service
+        endpoint:
+          type: string
+          description: Endpoint of the service
+
+    ProviderServiceResponse:
+      allOf:
+        - $ref: '#/components/schemas/ProviderService'
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+              description: ID of the service
+              example: "123e4567-e89b-12d3-a456-426614174000"
+              format: uuid
+
+    ProviderServiceList:
+      type: object
+      required:
+        - services
+      properties:
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderServiceResponse'
+
+    Error:
+      required:
+        - error
+        - type
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri-reference
+          description: Error type
+          example: "https://example.com/errors/bad-request"
+        error:
+          type: string
+          description: Error message
+          example: "Invalid request parameters - Validation Failed"
+
+    Health:
+      type: object
+      x-aep-resource:
+        singular: health
+        plural: healths
+        singleton: true
+      properties:
+        status:
+          type: string
+          description: Health status
+          example: "healthy"
+        path:
+          type: string
+          description: Canonical path of the resource
+          example: "health"
+          readOnly: true

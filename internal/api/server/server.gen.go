@@ -9,73 +9,98 @@ import (
 	"fmt"
 	"net/http"
 
+	externalRef0 "github.com/dcm-project/dcm-placement-api/api/v1alpha1/provider"
 	"github.com/go-chi/chi/v5"
 	"github.com/oapi-codegen/runtime"
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// Defines values for ApplicationService.
+// Defines values for CatalogItemResourceType.
 const (
-	Container ApplicationService = "container"
-	Webserver ApplicationService = "webserver"
+	CatalogItemResourceTypeContainer CatalogItemResourceType = "container"
+	CatalogItemResourceTypeVm        CatalogItemResourceType = "vm"
 )
 
-// Application defines model for Application.
-type Application struct {
-	// Name Name of the application
+// Defines values for CatalogItemResponseResourceType.
+const (
+	CatalogItemResponseResourceTypeContainer CatalogItemResponseResourceType = "container"
+	CatalogItemResponseResourceTypeVm        CatalogItemResponseResourceType = "vm"
+)
+
+// CatalogInstance defines model for CatalogInstance.
+type CatalogInstance struct {
+	CatalogItem CatalogItem `json:"catalogItem"`
+
+	// Name Name of the instance
 	Name string `json:"name"`
-
-	// Path Canonical path of the resource
-	Path *string `json:"path,omitempty"`
-
-	// Service Service of the application
-	Service ApplicationService `json:"service"`
-
-	// Tier Policy Tier of the application
-	Tier *int `json:"tier,omitempty"`
-
-	// Zones Zones of the application
-	Zones *[]string `json:"zones,omitempty"`
 }
 
-// ApplicationService Service of the application
-type ApplicationService string
-
-// ApplicationList defines model for ApplicationList.
-type ApplicationList struct {
-	Applications []ApplicationResponse `json:"applications"`
-
-	// NextPageToken Token for retrieving the next page of results
-	NextPageToken *string `json:"next_page_token,omitempty"`
+// CatalogInstanceList defines model for CatalogInstanceList.
+type CatalogInstanceList struct {
+	Instances []CatalogInstance `json:"instances"`
 }
 
-// ApplicationResponse defines model for ApplicationResponse.
-type ApplicationResponse struct {
-	// Id ID of the application
+// CatalogInstanceResponse defines model for CatalogInstanceResponse.
+type CatalogInstanceResponse struct {
+	CatalogItem CatalogItem `json:"catalogItem"`
+
+	// Id ID of the instance
 	Id *openapi_types.UUID `json:"id,omitempty"`
 
-	// Name Name of the application
-	Name *string `json:"name,omitempty"`
+	// Name Name of the instance
+	Name     string                                `json:"name"`
+	Provider *externalRef0.ProviderServiceResponse `json:"provider,omitempty"`
 
-	// Path Canonical path of the resource
-	Path *string `json:"path,omitempty"`
-
-	// Service Service of the application
-	Service *string `json:"service,omitempty"`
-
-	// Tier Policy Tier of the application
-	Tier *int `json:"tier,omitempty"`
-
-	// Zones Zones of the application
-	Zones *[]string `json:"zones,omitempty"`
+	// Status Status of the instance
+	Status *string `json:"status,omitempty"`
 }
+
+// CatalogInstanceResponseList defines model for CatalogInstanceResponseList.
+type CatalogInstanceResponseList struct {
+	Instances []CatalogInstanceResponse `json:"instances"`
+}
+
+// CatalogItem defines model for CatalogItem.
+type CatalogItem struct {
+	// Name Name of the instance
+	Name string `json:"name"`
+
+	// Parameters Content of the catalog item
+	Parameters map[string]interface{} `json:"parameters"`
+
+	// ResourceType Resource type of the catalog item
+	ResourceType CatalogItemResourceType `json:"resourceType"`
+}
+
+// CatalogItemResourceType Resource type of the catalog item
+type CatalogItemResourceType string
+
+// CatalogItemList defines model for CatalogItemList.
+type CatalogItemList struct {
+	CatalogItems []CatalogItem `json:"catalogItems"`
+}
+
+// CatalogItemResponse defines model for CatalogItemResponse.
+type CatalogItemResponse struct {
+	// Id ID of the instance
+	Id openapi_types.UUID `json:"id"`
+
+	// Name Name of the instance
+	Name string `json:"name"`
+
+	// Parameters Content of the catalog item
+	Parameters map[string]interface{} `json:"parameters"`
+
+	// ResourceType Resource type of the catalog item
+	ResourceType CatalogItemResponseResourceType `json:"resourceType"`
+}
+
+// CatalogItemResponseResourceType Resource type of the catalog item
+type CatalogItemResponseResourceType string
 
 // Error defines model for Error.
 type Error struct {
-	// Code Error code
-	Code *int `json:"code,omitempty"`
-
 	// Error Error message
 	Error string `json:"error"`
 
@@ -92,35 +117,41 @@ type Health struct {
 	Status *string `json:"status,omitempty"`
 }
 
-// ListApplicationsParams defines parameters for ListApplications.
-type ListApplicationsParams struct {
-	// MaxPageSize Maximum number of items to return
-	MaxPageSize *int `form:"max_page_size,omitempty" json:"max_page_size,omitempty"`
-
-	// PageToken Token for pagination
-	PageToken *string `form:"page_token,omitempty" json:"page_token,omitempty"`
+// Options defines model for Options.
+type Options struct {
+	// AllowedMethods Allowed methods
+	AllowedMethods *[]string `json:"allowedMethods,omitempty"`
 }
 
-// CreateApplicationParams defines parameters for CreateApplication.
-type CreateApplicationParams struct {
-	// Id Optional ID for the application
-	Id *string `form:"id,omitempty" json:"id,omitempty"`
-}
+// CreateCatalogInstanceJSONRequestBody defines body for CreateCatalogInstance for application/json ContentType.
+type CreateCatalogInstanceJSONRequestBody = CatalogInstance
 
-// CreateApplicationJSONRequestBody defines body for CreateApplication for application/json ContentType.
-type CreateApplicationJSONRequestBody = Application
+// CreateCatalogItemJSONRequestBody defines body for CreateCatalogItem for application/json ContentType.
+type CreateCatalogItemJSONRequestBody = CatalogItem
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Get all applications
-	// (GET /applications)
-	ListApplications(w http.ResponseWriter, r *http.Request, params ListApplicationsParams)
-	// Create an application
-	// (POST /applications)
-	CreateApplication(w http.ResponseWriter, r *http.Request, params CreateApplicationParams)
-	// Delete an application
-	// (DELETE /applications/{id})
-	DeleteApplication(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// Get all catalog instances
+	// (GET /cataloginstances)
+	ListCatalogInstances(w http.ResponseWriter, r *http.Request)
+	// Create an catalog instance
+	// (POST /cataloginstances)
+	CreateCatalogInstance(w http.ResponseWriter, r *http.Request)
+	// Delete an catalog instance
+	// (DELETE /cataloginstances/{id})
+	DeleteCatalogInstance(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// Get all catalog items
+	// (GET /catalogitems)
+	ListCatalogItems(w http.ResponseWriter, r *http.Request)
+	// Options for catalog items
+	// (OPTIONS /catalogitems)
+	OptionsCatalogItems(w http.ResponseWriter, r *http.Request)
+	// Create an catalog item
+	// (POST /catalogitems)
+	CreateCatalogItem(w http.ResponseWriter, r *http.Request)
+	// Delete an catalog item
+	// (DELETE /catalogitems/{id})
+	DeleteCatalogItem(w http.ResponseWriter, r *http.Request, id string)
 	// Health check
 	// (GET /health)
 	GetHealth(w http.ResponseWriter, r *http.Request)
@@ -130,21 +161,45 @@ type ServerInterface interface {
 
 type Unimplemented struct{}
 
-// Get all applications
-// (GET /applications)
-func (_ Unimplemented) ListApplications(w http.ResponseWriter, r *http.Request, params ListApplicationsParams) {
+// Get all catalog instances
+// (GET /cataloginstances)
+func (_ Unimplemented) ListCatalogInstances(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// Create an application
-// (POST /applications)
-func (_ Unimplemented) CreateApplication(w http.ResponseWriter, r *http.Request, params CreateApplicationParams) {
+// Create an catalog instance
+// (POST /cataloginstances)
+func (_ Unimplemented) CreateCatalogInstance(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// Delete an application
-// (DELETE /applications/{id})
-func (_ Unimplemented) DeleteApplication(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+// Delete an catalog instance
+// (DELETE /cataloginstances/{id})
+func (_ Unimplemented) DeleteCatalogInstance(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get all catalog items
+// (GET /catalogitems)
+func (_ Unimplemented) ListCatalogItems(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Options for catalog items
+// (OPTIONS /catalogitems)
+func (_ Unimplemented) OptionsCatalogItems(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Create an catalog item
+// (POST /catalogitems)
+func (_ Unimplemented) CreateCatalogItem(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Delete an catalog item
+// (DELETE /catalogitems/{id})
+func (_ Unimplemented) DeleteCatalogItem(w http.ResponseWriter, r *http.Request, id string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -163,33 +218,12 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// ListApplications operation middleware
-func (siw *ServerInterfaceWrapper) ListApplications(w http.ResponseWriter, r *http.Request) {
+// ListCatalogInstances operation middleware
+func (siw *ServerInterfaceWrapper) ListCatalogInstances(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params ListApplicationsParams
-
-	// ------------- Optional query parameter "max_page_size" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "max_page_size", r.URL.Query(), &params.MaxPageSize)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "max_page_size", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "page_token" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_token", r.URL.Query(), &params.PageToken)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page_token", Err: err})
-		return
-	}
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.ListApplications(w, r, params)
+		siw.Handler.ListCatalogInstances(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -199,25 +233,12 @@ func (siw *ServerInterfaceWrapper) ListApplications(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// CreateApplication operation middleware
-func (siw *ServerInterfaceWrapper) CreateApplication(w http.ResponseWriter, r *http.Request) {
+// CreateCatalogInstance operation middleware
+func (siw *ServerInterfaceWrapper) CreateCatalogInstance(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params CreateApplicationParams
-
-	// ------------- Optional query parameter "id" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "id", r.URL.Query(), &params.Id)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
-		return
-	}
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.CreateApplication(w, r, params)
+		siw.Handler.CreateCatalogInstance(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -227,8 +248,8 @@ func (siw *ServerInterfaceWrapper) CreateApplication(w http.ResponseWriter, r *h
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// DeleteApplication operation middleware
-func (siw *ServerInterfaceWrapper) DeleteApplication(w http.ResponseWriter, r *http.Request) {
+// DeleteCatalogInstance operation middleware
+func (siw *ServerInterfaceWrapper) DeleteCatalogInstance(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
@@ -243,7 +264,78 @@ func (siw *ServerInterfaceWrapper) DeleteApplication(w http.ResponseWriter, r *h
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteApplication(w, r, id)
+		siw.Handler.DeleteCatalogInstance(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// ListCatalogItems operation middleware
+func (siw *ServerInterfaceWrapper) ListCatalogItems(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListCatalogItems(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// OptionsCatalogItems operation middleware
+func (siw *ServerInterfaceWrapper) OptionsCatalogItems(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.OptionsCatalogItems(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// CreateCatalogItem operation middleware
+func (siw *ServerInterfaceWrapper) CreateCatalogItem(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateCatalogItem(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// DeleteCatalogItem operation middleware
+func (siw *ServerInterfaceWrapper) DeleteCatalogItem(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteCatalogItem(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -382,13 +474,25 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/applications", wrapper.ListApplications)
+		r.Get(options.BaseURL+"/cataloginstances", wrapper.ListCatalogInstances)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/applications", wrapper.CreateApplication)
+		r.Post(options.BaseURL+"/cataloginstances", wrapper.CreateCatalogInstance)
 	})
 	r.Group(func(r chi.Router) {
-		r.Delete(options.BaseURL+"/applications/{id}", wrapper.DeleteApplication)
+		r.Delete(options.BaseURL+"/cataloginstances/{id}", wrapper.DeleteCatalogInstance)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/catalogitems", wrapper.ListCatalogItems)
+	})
+	r.Group(func(r chi.Router) {
+		r.Options(options.BaseURL+"/catalogitems", wrapper.OptionsCatalogItems)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/catalogitems", wrapper.CreateCatalogItem)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/catalogitems/{id}", wrapper.DeleteCatalogItem)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/health", wrapper.GetHealth)
@@ -397,106 +501,224 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	return r
 }
 
-type ListApplicationsRequestObject struct {
-	Params ListApplicationsParams
+type ListCatalogInstancesRequestObject struct {
 }
 
-type ListApplicationsResponseObject interface {
-	VisitListApplicationsResponse(w http.ResponseWriter) error
+type ListCatalogInstancesResponseObject interface {
+	VisitListCatalogInstancesResponse(w http.ResponseWriter) error
 }
 
-type ListApplications200JSONResponse ApplicationList
+type ListCatalogInstances200JSONResponse CatalogInstanceResponseList
 
-func (response ListApplications200JSONResponse) VisitListApplicationsResponse(w http.ResponseWriter) error {
+func (response ListCatalogInstances200JSONResponse) VisitListCatalogInstancesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type ListApplications400JSONResponse Error
+type ListCatalogInstances400JSONResponse Error
 
-func (response ListApplications400JSONResponse) VisitListApplicationsResponse(w http.ResponseWriter) error {
+func (response ListCatalogInstances400JSONResponse) VisitListCatalogInstancesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type ListApplications500JSONResponse Error
+type ListCatalogInstances500JSONResponse Error
 
-func (response ListApplications500JSONResponse) VisitListApplicationsResponse(w http.ResponseWriter) error {
+func (response ListCatalogInstances500JSONResponse) VisitListCatalogInstancesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type CreateApplicationRequestObject struct {
-	Params CreateApplicationParams
-	Body   *CreateApplicationJSONRequestBody
+type CreateCatalogInstanceRequestObject struct {
+	Body *CreateCatalogInstanceJSONRequestBody
 }
 
-type CreateApplicationResponseObject interface {
-	VisitCreateApplicationResponse(w http.ResponseWriter) error
+type CreateCatalogInstanceResponseObject interface {
+	VisitCreateCatalogInstanceResponse(w http.ResponseWriter) error
 }
 
-type CreateApplication201JSONResponse ApplicationResponse
+type CreateCatalogInstance201JSONResponse CatalogInstanceResponse
 
-func (response CreateApplication201JSONResponse) VisitCreateApplicationResponse(w http.ResponseWriter) error {
+func (response CreateCatalogInstance201JSONResponse) VisitCreateCatalogInstanceResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(201)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type CreateApplication400JSONResponse Error
+type CreateCatalogInstance400JSONResponse Error
 
-func (response CreateApplication400JSONResponse) VisitCreateApplicationResponse(w http.ResponseWriter) error {
+func (response CreateCatalogInstance400JSONResponse) VisitCreateCatalogInstanceResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type CreateApplication500JSONResponse Error
+type CreateCatalogInstance500JSONResponse Error
 
-func (response CreateApplication500JSONResponse) VisitCreateApplicationResponse(w http.ResponseWriter) error {
+func (response CreateCatalogInstance500JSONResponse) VisitCreateCatalogInstanceResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type DeleteApplicationRequestObject struct {
+type DeleteCatalogInstanceRequestObject struct {
 	Id openapi_types.UUID `json:"id"`
 }
 
-type DeleteApplicationResponseObject interface {
-	VisitDeleteApplicationResponse(w http.ResponseWriter) error
+type DeleteCatalogInstanceResponseObject interface {
+	VisitDeleteCatalogInstanceResponse(w http.ResponseWriter) error
 }
 
-type DeleteApplication204JSONResponse ApplicationResponse
+type DeleteCatalogInstance204JSONResponse CatalogInstanceResponse
 
-func (response DeleteApplication204JSONResponse) VisitDeleteApplicationResponse(w http.ResponseWriter) error {
+func (response DeleteCatalogInstance204JSONResponse) VisitDeleteCatalogInstanceResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(204)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type DeleteApplication400JSONResponse Error
+type DeleteCatalogInstance400JSONResponse Error
 
-func (response DeleteApplication400JSONResponse) VisitDeleteApplicationResponse(w http.ResponseWriter) error {
+func (response DeleteCatalogInstance400JSONResponse) VisitDeleteCatalogInstanceResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type DeleteApplication500JSONResponse Error
+type DeleteCatalogInstance500JSONResponse Error
 
-func (response DeleteApplication500JSONResponse) VisitDeleteApplicationResponse(w http.ResponseWriter) error {
+func (response DeleteCatalogInstance500JSONResponse) VisitDeleteCatalogInstanceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ListCatalogItemsRequestObject struct {
+}
+
+type ListCatalogItemsResponseObject interface {
+	VisitListCatalogItemsResponse(w http.ResponseWriter) error
+}
+
+type ListCatalogItems200JSONResponse CatalogItemList
+
+func (response ListCatalogItems200JSONResponse) VisitListCatalogItemsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ListCatalogItems400JSONResponse Error
+
+func (response ListCatalogItems400JSONResponse) VisitListCatalogItemsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ListCatalogItems500JSONResponse Error
+
+func (response ListCatalogItems500JSONResponse) VisitListCatalogItemsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type OptionsCatalogItemsRequestObject struct {
+}
+
+type OptionsCatalogItemsResponseObject interface {
+	VisitOptionsCatalogItemsResponse(w http.ResponseWriter) error
+}
+
+type OptionsCatalogItems200JSONResponse Options
+
+func (response OptionsCatalogItems200JSONResponse) VisitOptionsCatalogItemsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateCatalogItemRequestObject struct {
+	Body *CreateCatalogItemJSONRequestBody
+}
+
+type CreateCatalogItemResponseObject interface {
+	VisitCreateCatalogItemResponse(w http.ResponseWriter) error
+}
+
+type CreateCatalogItem201JSONResponse CatalogItemResponse
+
+func (response CreateCatalogItem201JSONResponse) VisitCreateCatalogItemResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateCatalogItem400JSONResponse Error
+
+func (response CreateCatalogItem400JSONResponse) VisitCreateCatalogItemResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateCatalogItem500JSONResponse Error
+
+func (response CreateCatalogItem500JSONResponse) VisitCreateCatalogItemResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCatalogItemRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteCatalogItemResponseObject interface {
+	VisitDeleteCatalogItemResponse(w http.ResponseWriter) error
+}
+
+type DeleteCatalogItem204JSONResponse CatalogItemResponse
+
+func (response DeleteCatalogItem204JSONResponse) VisitDeleteCatalogItemResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(204)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCatalogItem400JSONResponse Error
+
+func (response DeleteCatalogItem400JSONResponse) VisitDeleteCatalogItemResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCatalogItem500JSONResponse Error
+
+func (response DeleteCatalogItem500JSONResponse) VisitDeleteCatalogItemResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -521,15 +743,27 @@ func (response GetHealth200JSONResponse) VisitGetHealthResponse(w http.ResponseW
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
-	// Get all applications
-	// (GET /applications)
-	ListApplications(ctx context.Context, request ListApplicationsRequestObject) (ListApplicationsResponseObject, error)
-	// Create an application
-	// (POST /applications)
-	CreateApplication(ctx context.Context, request CreateApplicationRequestObject) (CreateApplicationResponseObject, error)
-	// Delete an application
-	// (DELETE /applications/{id})
-	DeleteApplication(ctx context.Context, request DeleteApplicationRequestObject) (DeleteApplicationResponseObject, error)
+	// Get all catalog instances
+	// (GET /cataloginstances)
+	ListCatalogInstances(ctx context.Context, request ListCatalogInstancesRequestObject) (ListCatalogInstancesResponseObject, error)
+	// Create an catalog instance
+	// (POST /cataloginstances)
+	CreateCatalogInstance(ctx context.Context, request CreateCatalogInstanceRequestObject) (CreateCatalogInstanceResponseObject, error)
+	// Delete an catalog instance
+	// (DELETE /cataloginstances/{id})
+	DeleteCatalogInstance(ctx context.Context, request DeleteCatalogInstanceRequestObject) (DeleteCatalogInstanceResponseObject, error)
+	// Get all catalog items
+	// (GET /catalogitems)
+	ListCatalogItems(ctx context.Context, request ListCatalogItemsRequestObject) (ListCatalogItemsResponseObject, error)
+	// Options for catalog items
+	// (OPTIONS /catalogitems)
+	OptionsCatalogItems(ctx context.Context, request OptionsCatalogItemsRequestObject) (OptionsCatalogItemsResponseObject, error)
+	// Create an catalog item
+	// (POST /catalogitems)
+	CreateCatalogItem(ctx context.Context, request CreateCatalogItemRequestObject) (CreateCatalogItemResponseObject, error)
+	// Delete an catalog item
+	// (DELETE /catalogitems/{id})
+	DeleteCatalogItem(ctx context.Context, request DeleteCatalogItemRequestObject) (DeleteCatalogItemResponseObject, error)
 	// Health check
 	// (GET /health)
 	GetHealth(ctx context.Context, request GetHealthRequestObject) (GetHealthResponseObject, error)
@@ -564,25 +798,23 @@ type strictHandler struct {
 	options     StrictHTTPServerOptions
 }
 
-// ListApplications operation middleware
-func (sh *strictHandler) ListApplications(w http.ResponseWriter, r *http.Request, params ListApplicationsParams) {
-	var request ListApplicationsRequestObject
-
-	request.Params = params
+// ListCatalogInstances operation middleware
+func (sh *strictHandler) ListCatalogInstances(w http.ResponseWriter, r *http.Request) {
+	var request ListCatalogInstancesRequestObject
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.ListApplications(ctx, request.(ListApplicationsRequestObject))
+		return sh.ssi.ListCatalogInstances(ctx, request.(ListCatalogInstancesRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "ListApplications")
+		handler = middleware(handler, "ListCatalogInstances")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(ListApplicationsResponseObject); ok {
-		if err := validResponse.VisitListApplicationsResponse(w); err != nil {
+	} else if validResponse, ok := response.(ListCatalogInstancesResponseObject); ok {
+		if err := validResponse.VisitListCatalogInstancesResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -590,13 +822,11 @@ func (sh *strictHandler) ListApplications(w http.ResponseWriter, r *http.Request
 	}
 }
 
-// CreateApplication operation middleware
-func (sh *strictHandler) CreateApplication(w http.ResponseWriter, r *http.Request, params CreateApplicationParams) {
-	var request CreateApplicationRequestObject
+// CreateCatalogInstance operation middleware
+func (sh *strictHandler) CreateCatalogInstance(w http.ResponseWriter, r *http.Request) {
+	var request CreateCatalogInstanceRequestObject
 
-	request.Params = params
-
-	var body CreateApplicationJSONRequestBody
+	var body CreateCatalogInstanceJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
 		return
@@ -604,18 +834,18 @@ func (sh *strictHandler) CreateApplication(w http.ResponseWriter, r *http.Reques
 	request.Body = &body
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.CreateApplication(ctx, request.(CreateApplicationRequestObject))
+		return sh.ssi.CreateCatalogInstance(ctx, request.(CreateCatalogInstanceRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "CreateApplication")
+		handler = middleware(handler, "CreateCatalogInstance")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(CreateApplicationResponseObject); ok {
-		if err := validResponse.VisitCreateApplicationResponse(w); err != nil {
+	} else if validResponse, ok := response.(CreateCatalogInstanceResponseObject); ok {
+		if err := validResponse.VisitCreateCatalogInstanceResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -623,25 +853,130 @@ func (sh *strictHandler) CreateApplication(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-// DeleteApplication operation middleware
-func (sh *strictHandler) DeleteApplication(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
-	var request DeleteApplicationRequestObject
+// DeleteCatalogInstance operation middleware
+func (sh *strictHandler) DeleteCatalogInstance(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	var request DeleteCatalogInstanceRequestObject
 
 	request.Id = id
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteApplication(ctx, request.(DeleteApplicationRequestObject))
+		return sh.ssi.DeleteCatalogInstance(ctx, request.(DeleteCatalogInstanceRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "DeleteApplication")
+		handler = middleware(handler, "DeleteCatalogInstance")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(DeleteApplicationResponseObject); ok {
-		if err := validResponse.VisitDeleteApplicationResponse(w); err != nil {
+	} else if validResponse, ok := response.(DeleteCatalogInstanceResponseObject); ok {
+		if err := validResponse.VisitDeleteCatalogInstanceResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// ListCatalogItems operation middleware
+func (sh *strictHandler) ListCatalogItems(w http.ResponseWriter, r *http.Request) {
+	var request ListCatalogItemsRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ListCatalogItems(ctx, request.(ListCatalogItemsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ListCatalogItems")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ListCatalogItemsResponseObject); ok {
+		if err := validResponse.VisitListCatalogItemsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// OptionsCatalogItems operation middleware
+func (sh *strictHandler) OptionsCatalogItems(w http.ResponseWriter, r *http.Request) {
+	var request OptionsCatalogItemsRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.OptionsCatalogItems(ctx, request.(OptionsCatalogItemsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "OptionsCatalogItems")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(OptionsCatalogItemsResponseObject); ok {
+		if err := validResponse.VisitOptionsCatalogItemsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateCatalogItem operation middleware
+func (sh *strictHandler) CreateCatalogItem(w http.ResponseWriter, r *http.Request) {
+	var request CreateCatalogItemRequestObject
+
+	var body CreateCatalogItemJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateCatalogItem(ctx, request.(CreateCatalogItemRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateCatalogItem")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(CreateCatalogItemResponseObject); ok {
+		if err := validResponse.VisitCreateCatalogItemResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteCatalogItem operation middleware
+func (sh *strictHandler) DeleteCatalogItem(w http.ResponseWriter, r *http.Request, id string) {
+	var request DeleteCatalogItemRequestObject
+
+	request.Id = id
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteCatalogItem(ctx, request.(DeleteCatalogItemRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteCatalogItem")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeleteCatalogItemResponseObject); ok {
+		if err := validResponse.VisitDeleteCatalogItemResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
